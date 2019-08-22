@@ -21,7 +21,8 @@ def gauss_newton(
         residuals_func: Callable,
         jacobian_func: Callable,
         x0: Union[np.ndarray],
-        settings: Settings = None):
+        settings: Settings = None,
+        update_functor: Callable = None):
 
     if settings is None:
         settings = Settings()
@@ -38,7 +39,7 @@ def gauss_newton(
         n_residuals = len(residuals_val)
 
         assert jacobian_val.ndim == 2
-        assert jacobian_val.shape == [n_residuals, n_variables]
+        assert jacobian_val.shape == (n_residuals, n_variables)
 
         gradient_val = jacobian_val.T @ residuals_val
         loss_val = 0.5 * residuals_val.T @ residuals_val
@@ -56,5 +57,8 @@ def gauss_newton(
                 f"|step| = {np.linalg.norm(step_val)} "
             )
         x += step_val
+        if update_functor is not None:
+            if update_functor(x) is False:
+                break
 
     return x, OptimizationResultInfo
