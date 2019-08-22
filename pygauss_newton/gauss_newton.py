@@ -26,7 +26,8 @@ def gauss_newton(
 
     if settings is None:
         settings = Settings()
-    x0 = np.array(x0)
+    if not (type(x0) is np.ndarray):
+        x0 = np.array(x0, dtype=np.float32)
     assert x0.dtype in [np.float, np.float32, np.float64]
 
     optimization_state = OptimizationState()
