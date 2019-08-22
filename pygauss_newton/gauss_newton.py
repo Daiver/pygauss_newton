@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 import numpy as np
 
 
@@ -20,11 +20,14 @@ class OptimizationResultInfo:
 def gauss_newton(
         residuals_func: Callable,
         jacobian_func: Callable,
-        x0: np.ndarray,
+        x0: Union[np.ndarray],
         settings: Settings = None):
 
     if settings is None:
         settings = Settings()
+    x0 = np.array(x0)
+    assert x0.dtype in [np.float, np.float32, np.float64]
+
     x = x0.copy()
     n_variables = len(x)
     eye = np.eye(n_variables)
@@ -48,4 +51,5 @@ def gauss_newton(
                 f"|step| = {np.linalg.norm(step_val)} "
             )
         x += step_val
+        
     return x, OptimizationResultInfo
