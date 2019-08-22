@@ -34,6 +34,11 @@ def gauss_newton(
     for iter_ind in range(settings.n_max_iterations):
         residuals_val = residuals_func(x)
         jacobian_val = jacobian_func(x)
+        assert residuals_val.ndim == 1
+        n_residuals = len(residuals_val)
+
+        assert jacobian_val.ndim == 2
+        assert jacobian_val.shape == [n_residuals, n_variables]
 
         gradient_val = jacobian_val.T @ residuals_val
         loss_val = 0.5 * residuals_val.T @ residuals_val
@@ -51,5 +56,5 @@ def gauss_newton(
                 f"|step| = {np.linalg.norm(step_val)} "
             )
         x += step_val
-        
+
     return x, OptimizationResultInfo
