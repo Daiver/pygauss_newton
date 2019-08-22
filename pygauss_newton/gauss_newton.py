@@ -9,7 +9,7 @@ class Settings:
         self.verbose = verbose
 
 
-class OptimizationResultInfo:
+class OptimizationState:
     """
     Should be implemented later
     """
@@ -28,6 +28,8 @@ def gauss_newton(
         settings = Settings()
     x0 = np.array(x0)
     assert x0.dtype in [np.float, np.float32, np.float64]
+
+    optimization_state = OptimizationState()
 
     x = x0.copy()
     n_variables = len(x)
@@ -58,7 +60,7 @@ def gauss_newton(
             )
         x += step_val
         if update_functor is not None:
-            if update_functor(x) is False:
+            if update_functor(x, optimization_state) is False:
                 break
 
-    return x, OptimizationResultInfo
+    return x, optimization_state
