@@ -9,6 +9,14 @@ class Settings:
         self.verbose = verbose
 
 
+class OptimizationResultInfo:
+    """
+    Should be implemented later
+    """
+    def __init__(self):
+        pass
+
+
 def gauss_newton(
         residuals_func: Callable,
         jacobian_func: Callable,
@@ -40,4 +48,4 @@ def gauss_newton(
                 f"|step| = {np.linalg.norm(step_val)} "
             )
         x += step_val
-    return x
+    return x, OptimizationResultInfo
