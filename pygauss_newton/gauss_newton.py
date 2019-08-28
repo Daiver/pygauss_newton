@@ -1,3 +1,4 @@
+import time
 from typing import Callable, Union
 import numpy as np
 
@@ -23,7 +24,7 @@ def gauss_newton(
         x0: Union[np.ndarray],
         settings: Settings = None,
         update_functor: Callable = None):
-
+    optimization_start_time = time.time()
     if settings is None:
         settings = Settings()
     if not (type(x0) is np.ndarray):
@@ -63,5 +64,7 @@ def gauss_newton(
         if update_functor is not None:
             if update_functor(x, optimization_state) is False:
                 break
+    if settings.verbose:
+        print(f"Optimization elapsed: {time.time() - optimization_start_time}")
 
     return x, optimization_state

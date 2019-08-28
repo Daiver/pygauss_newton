@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="pygauss_newton",
-    version="0.0.8",
+    version="0.0.9",
     author="Daiver",
     author_email="ra22341@ya.ru",
     description="",
