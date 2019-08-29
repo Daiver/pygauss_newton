@@ -24,7 +24,7 @@ def gauss_newton(
         x0: Union[np.ndarray],
         settings: Settings = None,
         update_functor: Callable = None):
-    optimization_start_time = time.time()
+    start_time_optimization = time.time()
     if settings is None:
         settings = Settings()
     if not (type(x0) is np.ndarray):
@@ -37,8 +37,13 @@ def gauss_newton(
     n_variables = len(x)
     eye = np.eye(n_variables)
     for iter_ind in range(settings.n_max_iterations):
+        start_time_residuals = time.time()
         residuals_val = residuals_func(x)
+        end_time_residuals = time.time()
+
+        start_time_jac = time.time()
         jacobian_val = jacobian_func(x)
+        end_time_jac = time.time()
         assert residuals_val.ndim == 1
         n_residuals = len(residuals_val)
 
@@ -56,15 +61,17 @@ def gauss_newton(
         if settings.verbose:
             print(
                 f"{iter_ind + 1}/{settings.n_max_iterations}. "
-                f"Loss = {loss_val}, "
-                f"|grad| = {np.linalg.norm(gradient_val)} "
-                f"|step| = {np.linalg.norm(step_val)} "
+                f"f(x) = {loss_val}, "
+                f"|∇f(x)| = {np.linalg.norm(gradient_val)} "
+                f"|Δx| = {np.linalg.norm(step_val)} "
+                f"res. elps = {end_time_residuals - start_time_residuals} "
+                f"jac. elps = {end_time_jac - start_time_jac} "
             )
         x += step_val
         if update_functor is not None:
             if update_functor(x, optimization_state) is False:
                 break
     if settings.verbose:
-        print(f"Optimization elapsed: {time.time() - optimization_start_time}")
+        print(f"Optimization elapsed: {time.time() - start_time_optimization}")
 
     return x, optimization_state
