@@ -3,6 +3,7 @@ from typing import Callable, Union
 import numpy as np
 
 from .utils import time_fn
+from .stopping_reason import StoppingReason
 
 
 class Settings:
@@ -15,16 +16,15 @@ class Settings:
                  verbose=True):
         self.n_max_iterations = n_max_iterations
         self.dumping_constant = dumping_constant
+
         self.loss_stop_threshold = loss_stop_threshold
         self.grad_norm_stop_threshold = grad_norm_stop_threshold
         self.step_norm_stop_threshold = step_norm_stop_threshold
+
         self.verbose = verbose
 
 
 class OptimizationState:
-    """
-    Should be implemented later
-    """
     def __init__(self):
         self.variables_val = None
         self.residuals_val = None
@@ -35,6 +35,7 @@ class OptimizationState:
         self.hessian_val = None
         self.step_val = None
         self.step_norm = None
+        self.stopping_reason = StoppingReason.NotStopped
 
 
 def gauss_newton(
@@ -88,12 +89,16 @@ def gauss_newton(
         state.variables_val += state.step_val
         if update_functor is not None:
             if update_functor(state.variables_val, state) is False:
+                state.stopping_reason = StoppingReason.ByCallback
                 break
         if state.loss_val < settings.loss_stop_threshold:
+            state.stopping_reason = StoppingReason.ByLossValue
             break
         if state.gradient_norm < settings.grad_norm_stop_threshold:
+            state.stopping_reason = StoppingReason.ByGradNorm
             break
         if state.step_norm < settings.step_norm_stop_threshold:
+            state.stopping_reason = StoppingReason.ByStepNorm
             break
 
     # end of main loop
