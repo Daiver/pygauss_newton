@@ -4,9 +4,18 @@ import numpy as np
 
 
 class Settings:
-    def __init__(self, n_max_iterations=50, dumping_constant=0.0, verbose=True):
+    def __init__(self,
+                 n_max_iterations=50,
+                 dumping_constant=0.0,
+                 loss_stop_threshold=0.0,
+                 grad_norm_stop_threshold=0.0,
+                 step_norm_stop_threshold=0.0,
+                 verbose=True):
         self.n_max_iterations = n_max_iterations
         self.dumping_constant = dumping_constant
+        self.loss_stop_threshold = loss_stop_threshold
+        self.grad_norm_stop_threshold = grad_norm_stop_threshold
+        self.step_norm_stop_threshold = step_norm_stop_threshold
         self.verbose = verbose
 
 
@@ -51,19 +60,21 @@ def gauss_newton(
         assert jacobian_val.shape == (n_residuals, n_variables)
 
         gradient_val = jacobian_val.T @ residuals_val
+        gradient_norm = np.linalg.norm(gradient_val)
         loss_val = 0.5 * residuals_val.T @ residuals_val
 
         hessian_val = jacobian_val.T @ jacobian_val
         hessian_val += settings.dumping_constant * eye
 
         step_val = -np.linalg.solve(hessian_val, gradient_val)
+        step_norm = np.linalg.norm(step_val)
 
         if settings.verbose:
             print(
                 f"{iter_ind + 1}/{settings.n_max_iterations}. "
                 f"f(x) = {loss_val}, "
-                f"|∇f(x)| = {np.linalg.norm(gradient_val)} "
-                f"|Δx| = {np.linalg.norm(step_val)} "
+                f"|∇f(x)| = {gradient_norm} "
+                f"|Δx| = {step_norm} "
                 f"res. elps = {end_time_residuals - start_time_residuals} "
                 f"jac. elps = {end_time_jac - start_time_jac} "
             )
@@ -71,6 +82,14 @@ def gauss_newton(
         if update_functor is not None:
             if update_functor(x, optimization_state) is False:
                 break
+        if loss_val < settings.loss_stop_threshold:
+            break
+        if gradient_norm < settings.grad_norm_stop_threshold:
+            break
+        if step_norm < settings.step_norm_stop_threshold:
+            break
+    # end of main loop
+
     if settings.verbose:
         print(f"Optimization elapsed: {time.time() - start_time_optimization}")
 
