@@ -2,6 +2,8 @@ import time
 from typing import Callable, Union
 import numpy as np
 
+from .utils import time_fn
+
 
 class Settings:
     def __init__(self,
@@ -24,7 +26,15 @@ class OptimizationState:
     Should be implemented later
     """
     def __init__(self):
-        self.x = None
+        self.variables_val = None
+        self.residuals_val = None
+        self.jacobian_val = None
+        self.gradient_val = None
+        self.gradient_norm = None
+        self.loss_val = None
+        self.hessian_val = None
+        self.step_val = None
+        self.step_norm = None
 
 
 def gauss_newton(
@@ -40,53 +50,50 @@ def gauss_newton(
         x0 = np.array(x0, dtype=np.float32)
     assert x0.dtype in [np.float, np.float32, np.float64]
 
-    opt_state = OptimizationState()
+    state = OptimizationState()
 
-    opt_state.x = x0.copy()
-    n_variables = len(opt_state.x)
+    state.variables_val = x0.copy()
+    n_variables = len(state.variables_val)
     eye = np.eye(n_variables)
+
     for iter_ind in range(settings.n_max_iterations):
-        start_time_residuals = time.time()
-        residuals_val = residuals_func(opt_state.x)
-        end_time_residuals = time.time()
+        state.residuals_val, elapsed_residuals = time_fn(residuals_func, state.variables_val)
+        state.jacobian_val, elapsed_jacobian = time_fn(jacobian_func, state.variables_val)
 
-        start_time_jac = time.time()
-        jacobian_val = jacobian_func(opt_state.x)
-        end_time_jac = time.time()
-        assert residuals_val.ndim == 1
-        n_residuals = len(residuals_val)
+        assert state.residuals_val.ndim == 1
+        n_residuals = len(state.residuals_val)
 
-        assert jacobian_val.ndim == 2
-        assert jacobian_val.shape == (n_residuals, n_variables)
+        assert state.jacobian_val.ndim == 2
+        assert state.jacobian_val.shape == (n_residuals, n_variables)
 
-        gradient_val = jacobian_val.T @ residuals_val
-        gradient_norm = np.linalg.norm(gradient_val)
-        loss_val = 0.5 * residuals_val.T @ residuals_val
+        state.gradient_val = state.jacobian_val.T @ state.residuals_val
+        state.gradient_norm = np.linalg.norm(state.gradient_val)
+        state.loss_val = 0.5 * state.residuals_val.T @ state.residuals_val
 
-        hessian_val = jacobian_val.T @ jacobian_val
-        hessian_val += settings.dumping_constant * eye
+        state.hessian_val = state.jacobian_val.T @ state.jacobian_val
+        state.hessian_val += settings.dumping_constant * eye
 
-        step_val = -np.linalg.solve(hessian_val, gradient_val)
-        step_norm = np.linalg.norm(step_val)
+        state.step_val = -np.linalg.solve(state.hessian_val, state.gradient_val)
+        state.step_norm = np.linalg.norm(state.step_val)
 
         if settings.verbose:
             print(
                 f"{iter_ind + 1}/{settings.n_max_iterations}. "
-                f"f(x) = {loss_val}, "
-                f"|∇f(x)| = {gradient_norm} "
-                f"|Δx| = {step_norm} "
-                f"res. elps = {end_time_residuals - start_time_residuals} "
-                f"jac. elps = {end_time_jac - start_time_jac} "
+                f"f(x) = {state.loss_val}, "
+                f"|∇f(x)| = {state.gradient_norm} "
+                f"|Δx| = {state.step_norm} "
+                f"res. elps = {elapsed_residuals} "
+                f"jac. elps = {elapsed_jacobian} "
             )
-        opt_state.x += step_val
+        state.variables_val += state.step_val
         if update_functor is not None:
-            if update_functor(opt_state.x, opt_state) is False:
+            if update_functor(state.variables_val, state) is False:
                 break
-        if loss_val < settings.loss_stop_threshold:
+        if state.loss_val < settings.loss_stop_threshold:
             break
-        if gradient_norm < settings.grad_norm_stop_threshold:
+        if state.gradient_norm < settings.grad_norm_stop_threshold:
             break
-        if step_norm < settings.step_norm_stop_threshold:
+        if state.step_norm < settings.step_norm_stop_threshold:
             break
 
     # end of main loop
@@ -94,4 +101,4 @@ def gauss_newton(
     if settings.verbose:
         print(f"Optimization elapsed: {time.time() - start_time_optimization}")
 
-    return opt_state.x, opt_state
+    return state.variables_val, state
