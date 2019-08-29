@@ -24,7 +24,7 @@ class OptimizationState:
     Should be implemented later
     """
     def __init__(self):
-        pass
+        self.x = None
 
 
 def gauss_newton(
@@ -40,18 +40,18 @@ def gauss_newton(
         x0 = np.array(x0, dtype=np.float32)
     assert x0.dtype in [np.float, np.float32, np.float64]
 
-    optimization_state = OptimizationState()
+    opt_state = OptimizationState()
 
-    x = x0.copy()
-    n_variables = len(x)
+    opt_state.x = x0.copy()
+    n_variables = len(opt_state.x)
     eye = np.eye(n_variables)
     for iter_ind in range(settings.n_max_iterations):
         start_time_residuals = time.time()
-        residuals_val = residuals_func(x)
+        residuals_val = residuals_func(opt_state.x)
         end_time_residuals = time.time()
 
         start_time_jac = time.time()
-        jacobian_val = jacobian_func(x)
+        jacobian_val = jacobian_func(opt_state.x)
         end_time_jac = time.time()
         assert residuals_val.ndim == 1
         n_residuals = len(residuals_val)
@@ -78,9 +78,9 @@ def gauss_newton(
                 f"res. elps = {end_time_residuals - start_time_residuals} "
                 f"jac. elps = {end_time_jac - start_time_jac} "
             )
-        x += step_val
+        opt_state.x += step_val
         if update_functor is not None:
-            if update_functor(x, optimization_state) is False:
+            if update_functor(opt_state.x, opt_state) is False:
                 break
         if loss_val < settings.loss_stop_threshold:
             break
@@ -88,9 +88,10 @@ def gauss_newton(
             break
         if step_norm < settings.step_norm_stop_threshold:
             break
+
     # end of main loop
 
     if settings.verbose:
         print(f"Optimization elapsed: {time.time() - start_time_optimization}")
 
-    return x, optimization_state
+    return opt_state.x, opt_state
