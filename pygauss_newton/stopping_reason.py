@@ -7,3 +7,4 @@ class StoppingReason(Enum):
     ByLossValue = 1
     ByGradNorm = 2
     ByStepNorm = 3
+    ByMaxIterations = 4

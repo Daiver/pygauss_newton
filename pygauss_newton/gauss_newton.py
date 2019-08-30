@@ -102,6 +102,7 @@ def gauss_newton(
             break
 
     # end of main loop
+    state.stopping_reason = StoppingReason.ByMaxIterations
 
     if settings.verbose:
         print(f"Optimization elapsed: {time.time() - start_time_optimization}")
