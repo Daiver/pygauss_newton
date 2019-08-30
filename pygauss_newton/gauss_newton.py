@@ -26,6 +26,7 @@ class Settings:
 
 class OptimizationState:
     def __init__(self):
+        self.iter_ind = None
         self.variables_val = None
         self.residuals_val = None
         self.jacobian_val = None
@@ -58,6 +59,7 @@ def gauss_newton(
     eye = np.eye(n_variables)
 
     for iter_ind in range(settings.n_max_iterations):
+        state.iter_ind = iter_ind
         state.residuals_val, elapsed_residuals = time_fn(residuals_func, state.variables_val)
         state.jacobian_val, elapsed_jacobian = time_fn(jacobian_func, state.variables_val)
 
@@ -91,18 +93,19 @@ def gauss_newton(
             if update_functor(state.variables_val, state) is False:
                 state.stopping_reason = StoppingReason.ByCallback
                 break
-        if state.loss_val < settings.loss_stop_threshold:
+        if state.loss_val <= settings.loss_stop_threshold:
             state.stopping_reason = StoppingReason.ByLossValue
             break
-        if state.gradient_norm < settings.grad_norm_stop_threshold:
+        if state.gradient_norm <= settings.grad_norm_stop_threshold:
             state.stopping_reason = StoppingReason.ByGradNorm
             break
-        if state.step_norm < settings.step_norm_stop_threshold:
+        if state.step_norm <= settings.step_norm_stop_threshold:
             state.stopping_reason = StoppingReason.ByStepNorm
             break
 
     # end of main loop
-    state.stopping_reason = StoppingReason.ByMaxIterations
+    if state.stopping_reason == StoppingReason.NotStopped:
+        state.stopping_reason = StoppingReason.ByMaxIterations
 
     if settings.verbose:
         print(f"Optimization elapsed: {time.time() - start_time_optimization}")

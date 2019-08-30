@@ -14,35 +14,41 @@ class TestGaussNewton(unittest.TestCase):
 
         x = np.array([0.0])
         settings = pygauss_newton.Settings(verbose=False)
-        res = pygauss_newton.gauss_newton(
+        res, res_state = pygauss_newton.gauss_newton(
             residuals_func=residuals,
             jacobian_func=jacobian,
             x0=x,
             settings=settings,
             update_functor=None
         )
+        self.assertEqual(0, res_state.iter_ind)
+        self.assertEqual(res_state.stopping_reason, pygauss_newton.StoppingReason.ByLossValue)
         self.assertEqual(0, res[0])
 
         x = np.array([2.0])
         settings = pygauss_newton.Settings(verbose=False)
-        res = pygauss_newton.gauss_newton(
+        res, res_state = pygauss_newton.gauss_newton(
             residuals_func=residuals,
             jacobian_func=jacobian,
             x0=x,
             settings=settings,
             update_functor=None
         )
+        self.assertEqual(1, res_state.iter_ind)
+        self.assertEqual(res_state.stopping_reason, pygauss_newton.StoppingReason.ByLossValue)
         self.assertEqual(0, res[0])
 
         x = np.array([-20.0])
         settings = pygauss_newton.Settings(verbose=False)
-        res = pygauss_newton.gauss_newton(
+        res, res_state = pygauss_newton.gauss_newton(
             residuals_func=residuals,
             jacobian_func=jacobian,
             x0=x,
             settings=settings,
             update_functor=None
         )
+        self.assertEqual(1, res_state.iter_ind)
+        self.assertEqual(res_state.stopping_reason, pygauss_newton.StoppingReason.ByLossValue)
         self.assertEqual(0, res[0])
 
 
