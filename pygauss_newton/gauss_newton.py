@@ -79,6 +79,12 @@ def gauss_newton(
         state.step_val = -np.linalg.solve(state.hessian_val, state.gradient_val)
         state.step_norm = np.linalg.norm(state.step_val)
 
+        elapsed_upd = 0
+        if update_functor is not None:
+            functor_result, elapsed_upd = time_fn(update_functor, state.variables_val, state)
+            if functor_result is False:
+                state.stopping_reason = StoppingReason.ByCallback
+                break
         if settings.verbose:
             print(
                 f"{iter_ind + 1}/{settings.n_max_iterations}. "
@@ -87,12 +93,8 @@ def gauss_newton(
                 f"|Δx| = {state.step_norm} "
                 f"res. elps = {elapsed_residuals} "
                 f"jac. elps = {elapsed_jacobian} "
+                f"upd. elps = {elapsed_upd} "
             )
-        state.variables_val += state.step_val
-        if update_functor is not None:
-            if update_functor(state.variables_val, state) is False:
-                state.stopping_reason = StoppingReason.ByCallback
-                break
         if state.loss_val <= settings.loss_stop_threshold:
             state.stopping_reason = StoppingReason.ByLossValue
             break
@@ -102,6 +104,7 @@ def gauss_newton(
         if state.step_norm <= settings.step_norm_stop_threshold:
             state.stopping_reason = StoppingReason.ByStepNorm
             break
+        state.variables_val += state.step_val
 
     # end of main loop
     if state.stopping_reason == StoppingReason.NotStopped:
