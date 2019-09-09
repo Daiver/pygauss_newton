@@ -2,26 +2,9 @@ import time
 from typing import Callable, Union
 import numpy as np
 
+from .settings import Settings
 from .utils import time_fn
 from .stopping_reason import StoppingReason
-
-
-class Settings:
-    def __init__(self,
-                 n_max_iterations=50,
-                 damping_constant=0.0,
-                 loss_stop_threshold=0.0,
-                 grad_norm_stop_threshold=0.0,
-                 step_norm_stop_threshold=0.0,
-                 verbose=True):
-        self.n_max_iterations = n_max_iterations
-        self.damping_constant = damping_constant
-
-        self.loss_stop_threshold = loss_stop_threshold
-        self.grad_norm_stop_threshold = grad_norm_stop_threshold
-        self.step_norm_stop_threshold = step_norm_stop_threshold
-
-        self.verbose = verbose
 
 
 class OptimizationState:
@@ -44,7 +27,8 @@ def gauss_newton(
         jacobian_func: Callable,
         x0: Union[np.ndarray],
         settings: Settings = None,
-        update_functor: Callable = None):
+        update_functor: Callable = None
+) -> (np.ndarray, OptimizationState):
     start_time_optimization = time.time()
     if settings is None:
         settings = Settings()
@@ -74,7 +58,7 @@ def gauss_newton(
         state.loss_val = 0.5 * state.residuals_val.T @ state.residuals_val
 
         state.hessian_val = state.jacobian_val.T @ state.jacobian_val
-        state.hessian_val += settings.damping_constant * eye
+        state.hessian_val += settings.damping_constant_absolute * eye
 
         state.step_val = -np.linalg.solve(state.hessian_val, state.gradient_val)
         state.step_norm = np.linalg.norm(state.step_val)

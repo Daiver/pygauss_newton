@@ -2,6 +2,7 @@ import unittest
 
 import numpy as np
 import pygauss_newton
+import pygauss_newton.settings
 
 
 def oned_problem01_residuals(x):
@@ -16,7 +17,7 @@ class TestGaussNewton(unittest.TestCase):
     def test_1d_opt01(self):
 
         x = np.array([0.0])
-        settings = pygauss_newton.Settings(verbose=False)
+        settings = pygauss_newton.settings.Settings(verbose=False)
         res, res_state = pygauss_newton.gauss_newton(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
@@ -29,7 +30,7 @@ class TestGaussNewton(unittest.TestCase):
         self.assertEqual(0, res[0])
 
         x = np.array([2.0])
-        settings = pygauss_newton.Settings(verbose=False)
+        settings = pygauss_newton.settings.Settings(verbose=False)
         res, res_state = pygauss_newton.gauss_newton(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
@@ -42,7 +43,7 @@ class TestGaussNewton(unittest.TestCase):
         self.assertEqual(0, res[0])
 
         x = np.array([-20.0])
-        settings = pygauss_newton.Settings(verbose=False)
+        settings = pygauss_newton.settings.Settings(verbose=False)
         res, res_state = pygauss_newton.gauss_newton(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
@@ -56,7 +57,7 @@ class TestGaussNewton(unittest.TestCase):
 
     def test_stop_by_callback01(self):
         x = np.array([-20.0])
-        settings = pygauss_newton.Settings(verbose=False)
+        settings = pygauss_newton.settings.Settings(verbose=False)
         res, res_state = pygauss_newton.gauss_newton(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
