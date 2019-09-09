@@ -13,6 +13,16 @@ class StoppingReason(Enum):
 
 
 def stopping_condition_by_state_values(
-        settings: Settings
+        settings: Settings,
+        loss_val: float,
+        gradient_norm: float,
+        step_norm: float
 ) -> StoppingReason:
-    pass
+    if loss_val <= settings.loss_stop_threshold:
+        return StoppingReason.ByLossValue
+    if gradient_norm <= settings.grad_norm_stop_threshold:
+        return StoppingReason.ByGradNorm
+    if step_norm <= settings.step_norm_stop_threshold:
+        return StoppingReason.ByStepNorm
+
+    return StoppingReason.NotStopped

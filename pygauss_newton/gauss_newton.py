@@ -4,7 +4,7 @@ import numpy as np
 
 from .settings import Settings
 from .utils import time_fn
-from .stopping_reason import StoppingReason
+from .stopping_reason import StoppingReason, stopping_condition_by_state_values
 
 
 class OptimizationState:
@@ -79,14 +79,10 @@ def gauss_newton(
                 f"jac. elps = {elapsed_jacobian} "
                 f"upd. elps = {elapsed_upd} "
             )
-        if state.loss_val <= settings.loss_stop_threshold:
-            state.stopping_reason = StoppingReason.ByLossValue
-            break
-        if state.gradient_norm <= settings.grad_norm_stop_threshold:
-            state.stopping_reason = StoppingReason.ByGradNorm
-            break
-        if state.step_norm <= settings.step_norm_stop_threshold:
-            state.stopping_reason = StoppingReason.ByStepNorm
+        state.stopping_reason = stopping_condition_by_state_values(
+            settings=settings, loss_val=state.loss_val, gradient_norm=state.gradient_norm, step_norm=state.step_norm
+        )
+        if state.stopping_reason != StoppingReason.NotStopped:
             break
         state.variables_val += state.step_val
 
