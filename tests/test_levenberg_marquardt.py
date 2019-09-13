@@ -2,17 +2,16 @@ import unittest
 
 import numpy as np
 import pygauss_newton
-import pygauss_newton.settings
+from pygauss_newton import levenberg_marquardt
 
 from problems import oned_problem01_jacobian, oned_problem01_residuals
 
 
-class TestGaussNewton(unittest.TestCase):
+class TestLevenbergMarquardt(unittest.TestCase):
     def test_1d_opt01(self):
-
         x = np.array([0.0])
-        settings = pygauss_newton.settings.Settings(verbose=False)
-        res, res_state = pygauss_newton.gauss_newton(
+        settings = pygauss_newton.settings.Settings(verbose=False, loss_stop_threshold=1e-10)
+        res, res_state = pygauss_newton.levenberg_marquardt(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
             x0=x,
@@ -52,7 +51,7 @@ class TestGaussNewton(unittest.TestCase):
     def test_stop_by_callback01(self):
         x = np.array([-20.0])
         settings = pygauss_newton.settings.Settings(verbose=False)
-        res, res_state = pygauss_newton.gauss_newton(
+        res, res_state = pygauss_newton.levenberg_marquardt(
             residuals_func=oned_problem01_residuals,
             jacobian_func=oned_problem01_jacobian,
             x0=x,
