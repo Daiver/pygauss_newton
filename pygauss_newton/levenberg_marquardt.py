@@ -72,15 +72,6 @@ def levenberg_marquardt(
     for iter_ind in range(settings.n_max_iterations):
         state.iter_ind = iter_ind
 
-        if settings.verbose:
-            print(
-                f"{iter_ind + 1}/{settings.n_max_iterations}. "
-                f"f(x) = {state.loss_val}, "
-                f"|∇f(x)| = {state.gradient_norm} "
-                f"|Δx| = {state.step_norm} "
-                f"μ = {state.mu_value}"
-            )
-
         for search_iter in range(n_maximum_search_iterations):
             dumped_hessian = state.hessian_val + state.mu_value * eye
             state.step_val = -np.linalg.solve(dumped_hessian, state.gradient_val)
@@ -129,6 +120,15 @@ def levenberg_marquardt(
                     if functor_result is False:
                         state.stopping_reason = StoppingReason.ByCallback
                         break
+
+                if settings.verbose:
+                    print(
+                        f"{iter_ind + 1}/{settings.n_max_iterations}. "
+                        f"f(x) = {state.loss_val}, "
+                        f"|∇f(x)| = {state.gradient_norm} "
+                        f"|Δx| = {state.step_norm} "
+                        f"μ = {state.mu_value}"
+                    )
 
                 break
             state.mu_value = state.mu_value * state.mu_multiplier

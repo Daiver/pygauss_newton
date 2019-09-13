@@ -2,9 +2,9 @@ class Settings:
     def __init__(self,
                  n_max_iterations=50,
                  damping_constant_absolute=0.0,
-                 loss_stop_threshold=1e-10,
-                 grad_norm_stop_threshold=1e-10,
-                 step_norm_stop_threshold=1e-10,
+                 loss_stop_threshold=1e-30,
+                 grad_norm_stop_threshold=1e-30,
+                 step_norm_stop_threshold=1e-30,
                  verbose=True):
         self.n_max_iterations = n_max_iterations
         self.damping_constant_absolute = damping_constant_absolute
