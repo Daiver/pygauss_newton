@@ -91,9 +91,9 @@ def gauss_newton(
                 f"f(x) = {state.loss_val}, "
                 f"|∇f(x)| = {state.gradient_norm} "
                 f"|Δx| = {state.step_norm} "
-                f"res. elps = {elapsed_residuals} "
-                f"jac. elps = {elapsed_jacobian} "
-                f"upd. elps = {elapsed_upd} "
+                f"t(f) = {elapsed_residuals}, "
+                f"t(∇f) = {elapsed_jacobian} "
+                f"t(upd) = {elapsed_upd} "
             )
         if state.loss_val <= settings.loss_stop_threshold:
             state.stopping_reason = StoppingReason.ByLossValue
